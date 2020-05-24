@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>GFX Screen Creator</title>
+		<link rel="stylesheet" type="text/css" href="./style.css" />
+	</head>
+
+	<body onload="setup()">
+		<div id="wraper">
+			<div id="toolbar">
+				<a
+					class="selected"
+					id="brush"
+					href="#"
+					onclick="Tool('drawPixel')"
+					>BRUSH</a
+				>
+				<a id="rect" href="#" onclick="Tool('drawRect')">RECTANGLE</a>
+				<a id="rectf" href="#" onclick="Tool('fillRect')"
+					>RECTANGLE-FILLED</a
+				>
+				<a id="circle" href="#" onclick="Tool('circle')">CIRCLE</a>
+				<a id="circlef" href="#" onclick="Tool('circlef')"
+					>CIRCLE-FILLED</a
+				>
+				<a id="text" href="#" onclick="Tool('text')">TEXT</a>
+				<a id="erase" href="#" onclick="Tool('erase')">ERASE</a>
+			</div>
+			<div id="canvas">
+				<canvas id="mc">Nope</canvas>
+			</div>
+			<div id="build">
+				<button onclick="build()">BUILD!</button>
+				<div id="output"></div>
+			</div>
+		</div>
+
+		<script src="./static.js"></script>
+		<script src="./app.js"></script>
+	</body>
+</html>
