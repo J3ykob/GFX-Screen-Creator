@@ -1,37 +1,44 @@
 var cd = document.getElementById("canvas")
 var c = document.getElementById("mc")
+var cb = document.getElementById("mcb")
 var ctx = c.getContext("2d")
+var bcg = cb.getContext("2d")
 
 let pw = 128
 let ph = 64
 
 c.width = cd.getBoundingClientRect().width - 20
-c.height = cd.getBoundingClientRect().height
 
 let gw = Math.round(c.getBoundingClientRect().width / pw)
 let gh = gw
 
+c.height = ph * gw
+
+cb.width = c.width
+cb.height = c.height
+var newHeight = ""
+newHeight += c.height
+
 let sx = c.getBoundingClientRect().x
 let sy = c.getBoundingClientRect().y
 
-var plain = []
 var image = []
-var tool = "line"
+var tool = "drawCircle"
 var writeNow
+var currentEntity
 
 ctx.strokeStyle = "black"
-ctx.lineWidth = 0.1
+bcg.lineWidth = 0.1
 
 function Tool(t) {
 	tool = t
 }
 
 function setup() {
+	cd.style.height += newHeight
 	for (x = 0; x < pw * gw; x += gw) {
-		plain.push([])
 		for (y = 0; y < ph * gh; y += gh) {
-			plain[x / gw][y / gh] = 0
-			ctx.strokeRect(x, y, gw, gh)
+			bcg.strokeRect(x, y, gw, gh)
 		}
 	}
 }
@@ -39,12 +46,6 @@ function setup() {
 function draw(drawLast) {
 	if (!drawLast) {
 		ctx.clearRect(0, 0, c.width, c.height)
-
-		// for (x = 0; x < pw * gw; x += gw) {
-		// 	for (y = 0; y < ph * gh; y += gh) {
-		// 		ctx.strokeRect(x, y, gw, gh)
-		// 	}
-		// }
 	}
 	for (x = drawLast ? image.length - 1 : 0; x < image.length; x++) {
 		var shape = image[x]
@@ -86,20 +87,68 @@ function draw(drawLast) {
 				)
 				break
 
-			// case "line":
-			// 	var a = shape.h / shape.w
-			// 	console.log(a)
+			case "drawLine":
+				var a = shape.h / shape.w
+				console.log(shape)
 
-			// 	for (i = 0; i < Math.max(shape.w, shape.h); i++) {
-			// 		ctx.fillRect(
-			// 			shape.xs * gw + i * gw,
-			// 			shape.ys * gh + Math.round(a * i) * gh,
-			// 			gh,
-			// 			gw
-			// 		)
-			// 	}
-			// 	break
-			// case "circ":
+				for (
+					i = 0;
+					i < Math.max(Math.abs(shape.w), Math.abs(shape.h));
+					i++
+				) {
+					ctx.fillRect(
+						shape.xs * gw +
+							Math.round(
+								i *
+									(Math.abs(shape.w) > Math.abs(shape.h)
+										? 1
+										: 1 / a)
+							) *
+								gw *
+								Math.sign(
+									Math.abs(shape.w) > Math.abs(shape.h)
+										? shape.w
+										: shape.h
+								),
+						shape.ys * gh +
+							Math.round(
+								i *
+									(Math.abs(shape.w) > Math.abs(shape.h)
+										? a
+										: 1)
+							) *
+								gh *
+								Math.sign(
+									Math.abs(shape.w) > Math.abs(shape.h)
+										? shape.w
+										: shape.h
+								),
+						gh,
+						gw
+					)
+				}
+				break
+			case "drawCircle":
+				var r = Math.round(Math.sqrt(shape.w ^ (2 + shape.h) ^ 2))
+				for (i = 0; i < r * 2; i++) {
+					ctx.fillRect(
+						(shape.xs - r) * gw + i * gw,
+						shape.ys * gh +
+							Math.round(i * Math.sin((Math.PI * i) / (2 * r))) *
+								gh,
+						gw,
+						gh
+					)
+					ctx.fillRect(
+						(shape.xs - r) * gw + i * gw,
+						shape.ys * gh -
+							Math.round(i * Math.sin((Math.PI * i) / (2 * r))) *
+								gh,
+						gw,
+						gh
+					)
+				}
+				break
 
 			case "text":
 				console.log(shape)
@@ -195,22 +244,26 @@ document.addEventListener("mousedown", (e) => {
 		var cxt = Math.round((cx - sx) / gw)
 		var cyt = Math.round((cy - sy) / gh)
 
-		// case "erase":
-		// 			ctx.fillStyle = "#7000ab"
-		// 			ctx.fillRect(cxt * gw, cyt * gh, gw, gh)
-		// 			ctx.fillStyle = "black"
-		// 			break
-
 		if (
 			x > sx &&
 			x < sx + c.getBoundingClientRect().width + sx &&
 			y > sy &&
 			y < gh * ph + sy
 		) {
-			image[image.length - 1].xs = Math.min(xt, cxt)
-			image[image.length - 1].ys = Math.min(yt, cyt)
-			image[image.length - 1].w = Math.max(Math.abs(cxt - xt), 1)
-			image[image.length - 1].h = Math.max(Math.abs(cyt - yt), 1)
+			if (
+				image[image.length - 1].tool == "drawLine" ||
+				image[image.length - 1].tool == "drawCircle"
+			) {
+				image[image.length - 1].xs = xt
+				image[image.length - 1].ys = yt
+				image[image.length - 1].w = cxt - xt
+				image[image.length - 1].h = cyt - yt
+			} else {
+				image[image.length - 1].xs = Math.min(xt, cxt)
+				image[image.length - 1].ys = Math.min(yt, cyt)
+				image[image.length - 1].w = Math.max(Math.abs(cxt - xt), 1)
+				image[image.length - 1].h = Math.max(Math.abs(cyt - yt), 1)
+			}
 			draw()
 		}
 	}
@@ -218,7 +271,6 @@ document.addEventListener("mousedown", (e) => {
 	document.addEventListener("mousemove", displayPaint, true)
 
 	document.addEventListener("mouseup", function endtool(e) {
-		setup()
 		document.removeEventListener("mousemove", displayPaint, true)
 		document.removeEventListener("mouseup", endtool)
 	})
@@ -252,6 +304,10 @@ function build() {
 					"1);"
 				break
 			case "text":
+				if (image[i].letters.length == 0) {
+					outputString = ""
+					break
+				}
 				outputString +=
 					"setCursor(" +
 					image[i].xs +
@@ -272,8 +328,22 @@ function build() {
 					image[i].ys +
 					");"
 				break
+			case "drawLine":
+				outputString +=
+					image[i].tool +
+					"(" +
+					image[i].xs +
+					", " +
+					image[i].ys +
+					", " +
+					(image[i].xs + image[i].w) +
+					", " +
+					(image[i].ys + image[i].h) +
+					");"
+				break
 		}
 		sum += outputString
 	}
 	output.innerHTML = sum
 }
+document.addEventListener("mousemove", (e) => {})

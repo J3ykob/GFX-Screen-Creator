@@ -44,7 +44,19 @@ body {
 	border: black 1px solid;
 	text-align: center;
 	/* padding: 50px; */
-	padding-top: 100px;
-	/* height: 500px; */
-	padding-bottom: 200px;
+	height: 80vh;
+	/* padding-bottom: 200px; */
+	position: relative;
+}
+#mc,
+#mcb {
+	position: absolute;
+	margin-left: auto;
+	margin-right: auto;
+	left: 0;
+	right: 0;
+	text-align: center;
+}
+#mc {
+	z-index: 10;
 }
