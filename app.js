@@ -23,7 +23,7 @@ let sx = c.getBoundingClientRect().x
 let sy = c.getBoundingClientRect().y
 
 var image = []
-var tool = "drawCircle"
+var tool = "drawPixel"
 var writeNow
 var currentEntity
 
@@ -129,24 +129,76 @@ function draw(drawLast) {
 				}
 				break
 			case "drawCircle":
-				var r = Math.round(Math.sqrt(shape.w ^ (2 + shape.h) ^ 2))
-				for (i = 0; i < r * 2; i++) {
+				var r = Math.round(Math.sqrt(shape.w ** 2 + shape.h ** 2))
+				for (i = -r; i < r * 2; i++) {
 					ctx.fillRect(
-						(shape.xs - r) * gw + i * gw,
-						shape.ys * gh +
-							Math.round(i * Math.sin((Math.PI * i) / (2 * r))) *
-								gh,
-						gw,
-						gh
-					)
-					ctx.fillRect(
-						(shape.xs - r) * gw + i * gw,
+						shape.xs * gw - i * gw,
 						shape.ys * gh -
-							Math.round(i * Math.sin((Math.PI * i) / (2 * r))) *
-								gh,
+							Math.round(Math.sqrt(r ** 2 - i ** 2)) * gh,
 						gw,
 						gh
 					)
+					ctx.fillRect(
+						shape.xs * gw + i * gw,
+						shape.ys * gh +
+							Math.round(Math.sqrt(r ** 2 - i ** 2)) * gh,
+						gw,
+						gh
+					)
+				}
+				for (i = -r; i < r * 2; i++) {
+					ctx.fillRect(
+						shape.xs * gw -
+							Math.round(Math.sqrt(r ** 2 - i ** 2)) * gw,
+						shape.ys * gh - i * gh,
+						gw,
+						gh
+					)
+					ctx.fillRect(
+						shape.xs * gw +
+							Math.round(Math.sqrt(r ** 2 - i ** 2)) * gw,
+						shape.ys * gh + i * gh,
+						gw,
+						gh
+					)
+				}
+				break
+			case "fillCircle":
+				var r = Math.round(Math.sqrt(shape.w ** 2 + shape.h ** 2))
+				while (r > 0) {
+					r--
+					for (i = -r; i < r * 2; i++) {
+						ctx.fillRect(
+							shape.xs * gw - i * gw,
+							shape.ys * gh -
+								Math.round(Math.sqrt(r ** 2 - i ** 2)) * gh,
+							gw,
+							gh
+						)
+						ctx.fillRect(
+							shape.xs * gw + i * gw,
+							shape.ys * gh +
+								Math.round(Math.sqrt(r ** 2 - i ** 2)) * gh,
+							gw,
+							gh
+						)
+					}
+					for (i = -r; i < r * 2; i++) {
+						ctx.fillRect(
+							shape.xs * gw -
+								Math.round(Math.sqrt(r ** 2 - i ** 2)) * gw,
+							shape.ys * gh - i * gh,
+							gw,
+							gh
+						)
+						ctx.fillRect(
+							shape.xs * gw +
+								Math.round(Math.sqrt(r ** 2 - i ** 2)) * gw,
+							shape.ys * gh + i * gh,
+							gw,
+							gh
+						)
+					}
 				}
 				break
 
@@ -172,32 +224,38 @@ function draw(drawLast) {
 }
 
 function getKey(e) {
-	if (writeNow) {
-		var currentText = image.find((e, i, a) => {
-			return e.xs == xForKey && e.ys == yForKey
-		})
-		if (e.key == "Backspace") {
-			if (currentText.tool == "text") {
-				console.log(currentText.letters[currentText.letters.length - 1])
-				currentText.letters.pop()
-			}
-		} else {
-			if (e.keyCode >= 32 && e.keyCode <= 255) {
-				currentText.letters.push({
-					text: font.filter((ele, i, arr) => {
-						if (
-							i >= e.key.charCodeAt() * 5 &&
-							i <= e.key.charCodeAt() * 5 + 4
-						) {
-							return arr[i]
-						}
-					}),
-					letter: e.key,
-				})
-			}
-			console.log(image[image.length - 1])
-		}
+	if (e.keyCode == 90 && e.ctrlKey) {
+		image.splice(image.length - 1, 1)
 		draw()
+	}
+	else{
+		if (writeNow) {
+			var currentText = image.find((e, i, a) => {
+				return e.xs == xForKey && e.ys == yForKey
+			})
+			if (e.key == "Backspace") {
+				if (currentText.tool == "text") {
+					console.log(currentText.letters[currentText.letters.length - 1])
+					currentText.letters.pop()
+				}
+			} else {
+				if (e.keyCode >= 32 && e.keyCode <= 255) {
+					currentText.letters.push({
+						text: font.filter((ele, i, arr) => {
+							if (
+								i >= e.key.charCodeAt() * 5 &&
+								i <= e.key.charCodeAt() * 5 + 4
+							) {
+								return arr[i]
+							}
+						}),
+						letter: e.key,
+					})
+				}
+				console.log(image[image.length - 1])
+			}
+			draw()
+		}
 	}
 }
 
@@ -216,25 +274,27 @@ document.addEventListener("mousedown", (e) => {
 		y > sy &&
 		y < gh * ph + sy
 	) {
-		if (tool == "text") {
-			image.push({
-				tool: "text",
-				xs: xt,
-				ys: yt,
-				letters: [],
-			})
-			xForKey = xt
-			yForKey = yt
+		if (tool != "erase") {
+			if (tool == "text") {
+				image.push({
+					tool: "text",
+					xs: xt,
+					ys: yt,
+					letters: [],
+				})
+				xForKey = xt
+				yForKey = yt
 
-			writeNow = true
-		} else {
-			image.push({
-				tool: tool,
-				xs: xt,
-				ys: yt,
-				w: 1,
-				h: 1,
-			})
+				writeNow = true
+			} else {
+				image.push({
+					tool: tool,
+					xs: xt,
+					ys: yt,
+					w: 1,
+					h: 1,
+				})
+			}
 		}
 	}
 
@@ -258,6 +318,31 @@ document.addEventListener("mousedown", (e) => {
 				image[image.length - 1].ys = yt
 				image[image.length - 1].w = cxt - xt
 				image[image.length - 1].h = cyt - yt
+			} else if (image[image.length - 1].tool == "erase") {
+				var i = 0
+				var e
+				while (i < image.length - 1) {
+					e = image[i]
+					console.log(xt, e.xs)
+					if (e.tool == "drawRect" || e.tool == "drawCircle") {
+						if (
+							(xt == e.xs || xt < e.xs + e.w) &&
+							(yt > e.ys || yt < e.ys + e.width)
+						) {
+							image.splice(i, 1)
+							console.log(image)
+						}
+					} else if (
+						xt > e.xs &&
+						xt < e.xs + e.w &&
+						yt > e.ys &&
+						yt < e.ys + e.width
+					) {
+						image.splice(i, 1)
+
+					}
+					i++
+				}
 			} else {
 				image[image.length - 1].xs = Math.min(xt, cxt)
 				image[image.length - 1].ys = Math.min(yt, cyt)
@@ -279,6 +364,7 @@ document.addEventListener("mousedown", (e) => {
 })
 
 document.addEventListener("keyup", getKey)
+
 var output = document.getElementById("output")
 function build() {
 	var output = document.getElementById("output")
@@ -329,6 +415,7 @@ function build() {
 					");"
 				break
 			case "drawLine":
+			case "drawCircle":
 				outputString +=
 					image[i].tool +
 					"(" +
@@ -347,3 +434,4 @@ function build() {
 	output.innerHTML = sum
 }
 document.addEventListener("mousemove", (e) => {})
+
