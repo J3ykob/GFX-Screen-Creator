@@ -1,23 +1,22 @@
-var cd = document.getElementById("canvas")
-var c = document.getElementById("mc")
-var cb = document.getElementById("mcb")
+var cd = document.getElementById("canvas") //canvas div
+var c = document.getElementById("mc") //canvas which displays paint
+var cb = document.getElementById("mcb") //background grid
 var ctx = c.getContext("2d")
 var bcg = cb.getContext("2d")
 
-let pw = 128
-let ph = 64
+let pw = 128 //artificial pixels width
+let ph = 64  //artificial pixels height
 
 c.width = cd.getBoundingClientRect().width - 20
 
-let gw = Math.round(c.getBoundingClientRect().width / pw)
-let gh = gw
+let gw = Math.round(c.getBoundingClientRect().width / pw) // grid width in pixels
+let gh = gw												  // grid height in pixels
 
 c.height = ph * gw
 
 cb.width = c.width
 cb.height = c.height
-var newHeight = ""
-newHeight += c.height
+
 
 let sx = c.getBoundingClientRect().x
 let sy = c.getBoundingClientRect().y
@@ -26,21 +25,68 @@ var image = []
 var tool = "drawPixel"
 var writeNow
 var currentEntity
+var cfontsize = 1
 
 ctx.strokeStyle = "black"
-bcg.lineWidth = 0.1
+bcg.lineWidth = 0.01
 
 function Tool(t) {
 	tool = t
 }
 
+function ChangeScreen(){
+	console.log('changes')
+}
+
 function setup() {
-	cd.style.height += newHeight
-	for (x = 0; x < pw * gw; x += gw) {
-		for (y = 0; y < ph * gh; y += gh) {
-			bcg.strokeRect(x, y, gw, gh)
+
+	addEventListener('keyup', function startupFunction(e){
+		if(e.key == "Enter"){
+
+			image = []
+			pw = document.getElementById('width-input').value;
+			ph = document.getElementById('height-input').value;
+
+			
+			if((cd.clientWidth / pw) * ph > cd.clientHeight){
+				gw = (cd.getBoundingClientRect().height / ph)
+			}
+			else{
+				gw = (cd.getBoundingClientRect().width / pw)
+			}
+
+			gh = gw
+
+			c.width = gw * pw
+			c.height = gh * ph
+			
+			// cd.style.height = "" + ph*gw + "px"
+
+			cb.width = c.width
+			cb.height = c.height
+
+			sx = c.getBoundingClientRect().x
+			sy = c.getBoundingClientRect().y
+
+			
+			bcg.strokeRect(0, 0, gw * pw, gh * ph)
+			bcg.lineWidth = gw/100
+			for (x = 0; x < pw * gw; x += gw) {
+				for (y = 0; y < ph * gh; y += gh) {
+					bcg.strokeRect(x, y, gw, gh)
+				}
+			}
+
+			removeEventListener('keyup', startupFunction);
+
 		}
-	}
+	})
+
+	document.getElementById('font-size').addEventListener('input', function(e){
+		cfontsize = parseInt(this.value)
+	})
+
+	
 }
 
 function draw(drawLast) {
@@ -203,17 +249,17 @@ function draw(drawLast) {
 				break
 
 			case "text":
-				console.log(shape)
+				var fontsize = shape.fontsize
 				for (l = 0; l < shape.letters.length; l++) {
 					for (x2 = 0; x2 < 5; x2++) {
 						for (y = 0; y < 8; y++) {
 							var toDraw = (shape.letters[l].text[x2] >> y) & 0x01
 							if (toDraw)
 								ctx.fillRect(
-									shape.xs * gw + x2 * gw + l * 6 * gw,
-									shape.ys * gh + y * gh,
-									gw,
-									gh
+									shape.xs * gw + x2 * fontsize * gw + l * 6 * fontsize * gw,
+									shape.ys * gh + y * fontsize * gh,
+									gw * fontsize,
+									gh * fontsize
 								)
 						}
 					}
@@ -258,12 +304,19 @@ function getKey(e) {
 		}
 	}
 }
+	
+
+
+	
 
 document.addEventListener("mousedown", (e) => {
+
+	var scroll = document.documentElement.scrollTop
+
 	var x = e.clientX - gw / 2
 	var xt = Math.round((x - sx) / gw)
 
-	var y = e.clientY - gh / 2
+	var y = e.clientY - gh / 2 + scroll
 	var yt = Math.round((y - sy) / gh)
 
 	writeNow = false
@@ -281,6 +334,7 @@ document.addEventListener("mousedown", (e) => {
 					xs: xt,
 					ys: yt,
 					letters: [],
+					fontsize: cfontsize,
 				})
 				xForKey = xt
 				yForKey = yt
@@ -300,9 +354,11 @@ document.addEventListener("mousedown", (e) => {
 
 	function displayPaint(e) {
 		var cx = e.clientX - gw / 2
-		var cy = e.clientY - gh / 2
+		var cy = e.clientY - gh / 2 + scroll
 		var cxt = Math.round((cx - sx) / gw)
 		var cyt = Math.round((cy - sy) / gh)
+
+		
 
 		if (
 			x > sx &&
@@ -350,12 +406,17 @@ document.addEventListener("mousedown", (e) => {
 				image[image.length - 1].h = Math.max(Math.abs(cyt - yt), 1)
 			}
 			draw()
+			ctx.fillStyle = "rgba(255, 0, 0, 0.5)"
+			ctx.fillRect(0, cy - sy - gw, gw * pw + gw/1.5, gh/2)
+			ctx.fillRect(cx - sx - gh, 0, gw/2, gh * ph + gh/1.5)
+			ctx.fillStyle = "black"
 		}
 	}
 
 	document.addEventListener("mousemove", displayPaint, true)
 
 	document.addEventListener("mouseup", function endtool(e) {
+		draw()
 		document.removeEventListener("mousemove", displayPaint, true)
 		document.removeEventListener("mouseup", endtool)
 	})
@@ -399,7 +460,7 @@ function build() {
 					image[i].xs +
 					", " +
 					image[i].ys +
-					');<br>display.println("'
+					');<br>display.setTextSize(' + image[i].fontsize + ');<br>display.println("'
 				for (j = 0; j < image[i].letters.length; j++) {
 					outputString += image[i].letters[j].letter
 				}

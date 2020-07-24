@@ -1,7 +1,14 @@
+html{
+	scrollbar-width: none;
+}
 body {
 	height: 100%;
 	width: 99%;
 	background-color: whitesmoke;
+    
+}
+body::-webkit-scrollbar{
+	display:none;
 }
 
 #wraper {
@@ -12,6 +19,7 @@ body {
 	margin-top: 40px;
 
 	background-color: whitesmoke;
+	scrollbar-width: none;
 }
 
 #toolbar {
