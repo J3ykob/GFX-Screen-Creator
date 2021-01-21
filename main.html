@@ -8,24 +8,19 @@
 
 	<body onload="setup()">
 		<div id="wraper">
-			<input placeholder="width" id="width-input"> x
-			<input placeholder="height" id="height-input" style="margin-right: 10%"> Set font size: 
-			<input placeholder="font-size" id="font-size" ><br><br>
+			<input placeholder="width" id="width-input" /> x
+			<input placeholder="height" id="height-input" style="margin-right: 10%" /> Set font size:
+			<input placeholder="font-size" id="font-size" /><br /><br />
 			<div id="toolbar">
-				<div class="selected" id="brush" href="#" onclick="Tool('drawPixel')">
-					PIXEL
-				</div>
+				<div class="selected" id="brush" href="#" onclick="Tool('drawPixel')">PIXEL</div>
 				<div id="line" href="#" onclick="Tool('drawLine')">LINE</div>
 				<div id="rect" href="#" onclick="Tool('drawRect')">RECTANGLE</div>
-				<div id="rectf" href="#" onclick="Tool('fillRect')">
-					RECTANGLE-FILLED
-				</div>
+				<div id="rectf" href="#" onclick="Tool('fillRect')">RECTANGLE-FILLED</div>
 
 				<div id="circle" href="#" onclick="Tool('drawCircle')">CIRCLE</div>
-				<div id="circlef" href="#" onclick="Tool('drawCircle')" style="cursor:not-allowed;">CIRCLE-FILLED</div>
+				<div id="circlef" href="#" onclick="Tool('drawCircle')" style="cursor: not-allowed">CIRCLE-FILLED</div>
 
 				<div id="text" href="#" onclick="Tool('text')">TEXT</div>
-			
 			</div>
 			<div id="canvas">
 				<canvas id="mcb">NO NO</canvas>
@@ -41,3 +36,5 @@
 		<script src="./app.js"></script>
 	</body>
 </html>
+
+<!-- comimt -->
